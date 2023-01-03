@@ -6,6 +6,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "glm/ext.hpp"
+#include "glm/gtx/string_cast.hpp"
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -36,6 +38,9 @@ float lastY = 300.0f;
 float yaw = -90.0f;
 float pitch = 0.0f;
 
+//Initialize Car Position
+bool startPosition = true;
+
 int main()
 {
 	glfwInit();
@@ -43,7 +48,7 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE,GLFW_OPENGL_CORE_PROFILE);
 
-	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "My Engine", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "My Engine - 20102181", NULL, NULL);
 	if (window == NULL)
 	{
 		std::cout << "Falied to create GLFW window" << std::endl;
@@ -71,105 +76,423 @@ int main()
 	Shader shader("4.6.VertexShader.vert", "4.6.FragmentShader.frag");
 
 	/*------------------Draw Vertices-------------------*/
-	GLfloat Vertices[] =
+	GLfloat RoadVertices[] =
 	{
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		-10.0f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f,
+		 0.5f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f,
+		 0.5f,  0.5f, -0.5f,  0.5f, 0.5f, 0.5f,
+		 0.5f,  0.5f, -0.5f,  0.5f, 0.5f, 0.5f,
+		-10.0f,  0.5f, -0.5f,  0.5f, 0.5f, 0.5f,
+		-10.0f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f,
 
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-10.0f, -0.5f,  0.5f,  0.5f, 0.5f, 0.5f,
+		 0.5f, -0.5f,  0.5f,  0.5f, 0.5f, 0.5f,
+		 0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f,
+		 0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f,
+		-10.0f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f,
+		-10.0f, -0.5f,  0.5f,  0.5f, 0.5f, 0.5f,
 
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-10.0f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f,
+		-10.0f,  0.5f, -0.5f,  0.5f, 0.5f, 0.5f,
+		-10.0f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f,
+		-10.0f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f,
+		-10.0f, -0.5f,  0.5f,  0.5f, 0.5f, 0.5f,
+		-10.0f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f,
 
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f,
+		 0.5f,  0.5f, -0.5f,  0.5f, 0.5f, 0.5f,
+		 0.5f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f,
+		 0.5f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f,
+		 0.5f, -0.5f,  0.5f,  0.5f, 0.5f, 0.5f,
+		 0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f,
 
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-10.0f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f,
+		 0.5f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f,
+		 0.5f, -0.5f,  0.5f,  0.5f, 0.5f, 0.5f,
+		 0.5f, -0.5f,  0.5f,  0.5f, 0.5f, 0.5f,
+		-10.0f, -0.5f,  0.5f,  0.5f, 0.5f, 0.5f,
+		-10.0f, -0.5f, -0.5f,  0.5f, 0.5f, 0.5f,
 
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+		-10.0f,  0.5f, -0.5f,  0.5f, 0.5f, 0.5f,
+		 0.5f,  0.5f, -0.5f,  0.5f, 0.5f, 0.5f,
+		 0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f,
+		 0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f,
+		-10.0f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f,
+		-10.0f,  0.5f, -0.5f,  0.5f, 0.5f, 0.5f
+	};
+
+	GLfloat StripsVertices[] =
+	{
+		-10.0f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+		-10.0f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+		-10.0f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+
+		-10.0f, -0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
+		-10.0f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
+		-10.0f, -0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
+
+		-10.0f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
+		-10.0f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+		-10.0f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+		-10.0f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+		-10.0f, -0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
+		-10.0f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
+
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
+
+		-10.0f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
+		-10.0f, -0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
+		-10.0f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+
+		-10.0f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
+		-10.0f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
+		-10.0f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f
+	};
+
+	GLfloat MetalVertices[] =
+	{
+		-10.0f, -0.5f, -0.5f,  0.8f, 0.8f, 0.8f,
+		 0.5f, -0.5f, -0.5f,  0.8f, 0.8f, 0.8f,
+		 0.5f,  0.5f, -0.5f,  0.8f, 0.8f, 0.8f,
+		 0.5f,  0.5f, -0.5f,  0.8f, 0.8f, 0.8f,
+		-10.0f,  0.5f, -0.5f,  0.8f, 0.8f, 0.8f,
+		-10.0f, -0.5f, -0.5f,  0.8f, 0.8f, 0.8f,
+
+		-10.0f, -0.5f,  0.5f,  0.8f, 0.8f, 0.8f,
+		 0.5f, -0.5f,  0.5f,  0.8f, 0.8f, 0.8f,
+		 0.5f,  0.5f,  0.5f,  0.8f, 0.8f, 0.8f,
+		 0.5f,  0.5f,  0.5f,  0.8f, 0.8f, 0.8f,
+		-10.0f,  0.5f,  0.5f,  0.8f, 0.8f, 0.8f,
+		-10.0f, -0.5f,  0.5f,  0.8f, 0.8f, 0.8f,
+
+		-10.0f,  0.5f,  0.5f,  0.8f, 0.8f, 0.8f,
+		-10.0f,  0.5f, -0.5f,  0.8f, 0.8f, 0.8f,
+		-10.0f, -0.5f, -0.5f,  0.8f, 0.8f, 0.8f,
+		-10.0f, -0.5f, -0.5f,  0.8f, 0.8f, 0.8f,
+		-10.0f, -0.5f,  0.5f,  0.8f, 0.8f, 0.8f,
+		-10.0f,  0.5f,  0.5f,  0.8f, 0.8f, 0.8f,
+
+		 0.5f,  0.5f,  0.5f,  0.8f, 0.8f, 0.8f,
+		 0.5f,  0.5f, -0.5f,  0.8f, 0.8f, 0.8f,
+		 0.5f, -0.5f, -0.5f,  0.8f, 0.8f, 0.8f,
+		 0.5f, -0.5f, -0.5f,  0.8f, 0.8f, 0.8f,
+		 0.5f, -0.5f,  0.5f,  0.8f, 0.8f, 0.8f,
+		 0.5f,  0.5f,  0.5f,  0.8f, 0.8f, 0.8f,
+
+		-10.0f, -0.5f, -0.5f,  0.8f, 0.8f, 0.8f,
+		 0.5f, -0.5f, -0.5f,  0.8f, 0.8f, 0.8f,
+		 0.5f, -0.5f,  0.5f,  0.8f, 0.8f, 0.8f,
+		 0.5f, -0.5f,  0.5f,  0.8f, 0.8f, 0.8f,
+		-10.0f, -0.5f,  0.5f,  0.8f, 0.8f, 0.8f,
+		-10.0f, -0.5f, -0.5f,  0.8f, 0.8f, 0.8f,
+
+		-10.0f,  0.5f, -0.5f,  0.8f, 0.8f, 0.8f,
+		 0.5f,  0.5f, -0.5f,  0.8f, 0.8f, 0.8f,
+		 0.5f,  0.5f,  0.5f,  0.8f, 0.8f, 0.8f,
+		 0.5f,  0.5f,  0.5f,  0.8f, 0.8f, 0.8f,
+		-10.0f,  0.5f,  0.5f,  0.8f, 0.8f, 0.8f,
+		-10.0f,  0.5f, -0.5f,  0.8f, 0.8f, 0.8f
+	};
+
+	GLfloat CarVertices[] =
+	{
+		-10.0f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		-10.0f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		-10.0f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+
+		-10.0f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		-10.0f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		-10.0f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+
+		-10.0f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		-10.0f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		-10.0f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		-10.0f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		-10.0f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		-10.0f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+
+		-10.0f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		-10.0f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		-10.0f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+
+		-10.0f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		-10.0f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		-10.0f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f
+	};
+
+	GLfloat CubeVertices[] =
+	{
+		-10.0f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
+		-10.0f,  0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
+		-10.0f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
+
+		-10.0f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.0f,
+		-10.0f,  0.5f,  0.5f,  0.0f, 0.0f, 0.0f,
+		-10.0f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,
+
+		-10.0f,  0.5f,  0.5f,  0.0f, 0.0f, 0.0f,
+		-10.0f,  0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
+		-10.0f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
+		-10.0f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
+		-10.0f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,
+		-10.0f,  0.5f,  0.5f,  0.0f, 0.0f, 0.0f,
+
+		 0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.0f,
+
+		-10.0f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,
+		-10.0f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,
+		-10.0f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
+
+		-10.0f,  0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.0f,
+		-10.0f,  0.5f,  0.5f,  0.0f, 0.0f, 0.0f,
+		-10.0f,  0.5f, -0.5f,  0.0f, 0.0f, 0.0f
+	};
+
+	GLfloat stopVertices[] =
+	{
+		-10.0f, -0.5f, -0.5f,  1.0f, 0.5f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.5f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 0.5f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 0.5f, 0.0f,
+		-10.0f,  0.5f, -0.5f,  1.0f, 0.5f, 0.0f,
+		-10.0f, -0.5f, -0.5f,  1.0f, 0.5f, 0.0f,
+
+		-10.0f, -0.5f,  0.5f,  1.0f, 0.5f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.5f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.5f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.5f, 0.0f,
+		-10.0f,  0.5f,  0.5f,  1.0f, 0.5f, 0.0f,
+		-10.0f, -0.5f,  0.5f,  1.0f, 0.5f, 0.0f,
+
+		-10.0f,  0.5f,  0.5f,  1.0f, 0.5f, 0.0f,
+		-10.0f,  0.5f, -0.5f,  1.0f, 0.5f, 0.0f,
+		-10.0f, -0.5f, -0.5f,  1.0f, 0.5f, 0.0f,
+		-10.0f, -0.5f, -0.5f,  1.0f, 0.5f, 0.0f,
+		-10.0f, -0.5f,  0.5f,  1.0f, 0.5f, 0.0f,
+		-10.0f,  0.5f,  0.5f,  1.0f, 0.5f, 0.0f,
+
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.5f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 0.5f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.5f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.5f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.5f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.5f, 0.0f,
+
+		-10.0f, -0.5f, -0.5f,  1.0f, 0.5f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.5f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.5f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.5f, 0.0f,
+		-10.0f, -0.5f,  0.5f,  1.0f, 0.5f, 0.0f,
+		-10.0f, -0.5f, -0.5f,  1.0f, 0.5f, 0.0f,
+
+		-10.0f,  0.5f, -0.5f,  1.0f, 0.5f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 0.5f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.5f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.5f, 0.0f,
+		-10.0f,  0.5f,  0.5f,  1.0f, 0.5f, 0.0f,
+		-10.0f,  0.5f, -0.5f,  1.0f, 0.5f, 0.0f
 	};
 
 	/*------------------Draw Multiple Objects-------------------*/
-	glm::vec3 cubePositions[] =
+	glm::vec3 CarPosition[] =
 	{
-		glm::vec3(0.0f,0.0f,0.0f),
-		glm::vec3(2.0f,5.0f,-15.0f),
-		glm::vec3(-1.5f,-2.2f,-2.5f),
-		glm::vec3(-3.8f,-2.0f,-12.3f),
-		glm::vec3(2.4f,-0.4f,-3.5f),
-		glm::vec3(-1.7f,3.0f,-7.5f),
-		glm::vec3(1.3f,-2.0f,-2.5f),
-		glm::vec3(1.5f,2.0f,-2.5f),
-		glm::vec3(1.5f,0.2f,-1.5f),
-		glm::vec3(-1.3f,1.0f,-1.5f)
+		glm::vec3(3.0f,0.5f,0.7f),
+		glm::vec3(2.5f,1.0f,0.7f),
+		glm::vec3(1.7f,1.0f,0.7f)
 	};
-	unsigned int indices[] =
+	glm::vec3 newCarPosition[] =
 	{
-		0,1,3,
-		1,2,3
+		glm::vec3(3.0f,0.5f,0.7f)
 	};
 
-	unsigned int VBO;
-	unsigned int VAO;
+	glm::vec3 CubePosition[] =
+	{
+		glm::vec3(1.65f,1.0f,0.7f),
+		glm::vec3(2.3f,0.9f,0.9f),
+		glm::vec3(2.3f,0.9f,0.5f)
+	};
+
+	glm::vec3 RoadPosition[] =
+	{
+		glm::vec3(3.0f,0.0f,0.0f)
+	};
+
+	glm::vec3 StripsPositions[] =
+	{
+		glm::vec3(3.0f,0.0f,0.0f),
+		glm::vec3(1.0f,0.0f,0.0f),
+		glm::vec3(-1.0f,0.0f,0.0f),
+		glm::vec3(-3.0f,0.0f,0.0f)
+	};
+
+	glm::vec3 MetalPositions[] =
+	{
+		glm::vec3(3.0f,0.5f,1.5f),
+		glm::vec3(1.5f,0.5f,1.5f),
+		glm::vec3(-1.0f,0.5f,1.5f),
+		glm::vec3(-3.0f,0.5f,1.5f),
+
+		glm::vec3(3.0f,0.5f,-1.5f),
+		glm::vec3(1.5f,0.5f,-1.5f),
+		glm::vec3(-1.0f,0.5f,-1.5f),
+		glm::vec3(-3.0f,0.5f,-1.5f)
+	};
+
+	glm::vec3 stopPositions[] =
+	{
+		glm::vec3(3.3f,1.0f,1.5f),
+		glm::vec3(3.3f,1.0f,1.5f)
+	};
+
+	unsigned int VBO[6];
+	unsigned int VAO[6];
 	unsigned int EBO;
 
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
+	glGenVertexArrays(6, VAO);
+	glGenBuffers(6, VBO);
 	glGenBuffers(1, &EBO);
 
-	glBindVertexArray(VAO);
+	/*------------------Road-------------------*/
+	glBindVertexArray(VAO[0]);
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(RoadVertices), RoadVertices, GL_STATIC_DRAW);
 
 	//Position Attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
 	//Color Attribute
-	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	//glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
-	//Texture Attribute
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(2);
+	/*------------------Road Strips-------------------*/
+	glBindVertexArray(VAO[1]);
 
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(StripsVertices), StripsVertices, GL_STATIC_DRAW);
+
+	//Position Attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	//Color Attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	/*------------------Metal-------------------*/
+	glBindVertexArray(VAO[2]);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(MetalVertices), MetalVertices, GL_STATIC_DRAW);
+
+	//Position Attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	//Color Attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	/*------------------Car-------------------*/
+	glBindVertexArray(VAO[3]);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[3]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(CarVertices), CarVertices, GL_STATIC_DRAW);
+
+	//Position Attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	//Color Attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	/*------------------Cube-------------------*/
+	glBindVertexArray(VAO[4]);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[4]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(CubeVertices), CubeVertices, GL_STATIC_DRAW);
+
+	//Position Attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	//Color Attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	/*------------------Stop-------------------*/
+	glBindVertexArray(VAO[5]);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[5]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(stopVertices), stopVertices, GL_STATIC_DRAW);
+
+	//Position Attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	//Color Attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	/*-----------------Texture---------------------*/
 	
 	//Generate the texture one
-	unsigned int texture1;
+	/*unsigned int texture1;
 	glGenTextures(1, &texture1);
 	glBindTexture(GL_TEXTURE_2D, texture1);
 	
@@ -219,13 +542,10 @@ int main()
 	{
 		std::cout << "Failed to load the textures" << std::endl;
 	}
-	stbi_image_free(data);
+	stbi_image_free(data);*/
 	
 	//Activate the shader
 	shader.use();
-
-	glUniform1i(glGetUniformLocation(shader.ID, "Texture1"), 0);
-	glUniform1i(glGetUniformLocation(shader.ID, "Texture2"), 1);
 
 	/*-------------------------Rendering----------------------------*/
 	while (!glfwWindowShouldClose(window))
@@ -236,13 +556,7 @@ int main()
 		glClearColor(0.3f, 0.6f, 0.6f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		/*----------Render the shape--------------*/
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture1);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, texture2);
-
-		/*------------------------Transformations-----------------------*/
+		/*------------------------Setting Up World Coordinates-----------------------*/
 		const float radius = 10.0f;
 		float camX = sin(glfwGetTime()) * radius;
 		float camZ = cos(glfwGetTime()) * radius;
@@ -264,30 +578,245 @@ int main()
 		int projectionLoc = glGetUniformLocation(shader.ID, "projection");
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-		glBindVertexArray(VAO);
-		for (int i = 0; i < 10; i++)
+
+		/*------------------------Road-----------------------*/
+		glBindVertexArray(VAO[0]);
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, RoadPosition[0]);
+		float angle = 0.0f;
+		model = glm::rotate(model, glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.7, 0.1, 3.0));
+		int modelLoc = glGetUniformLocation(shader.ID, "model");
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		/*------------------------Road Strips-----------------------*/
+		for (int i = 0; i < 4; i++)
 		{
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, cubePositions[i]);
-			float angle = 20.0f * i;
+			glBindVertexArray(VAO[1]);
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, StripsPositions[i]);
+			angle = 0.0f;
 			model = glm::rotate(model, glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
-			int modelLoc = glGetUniformLocation(shader.ID, "model");
+			model = glm::scale(model, glm::vec3(0.1, 0.15, 0.1));
+			modelLoc = glGetUniformLocation(shader.ID, "model");
 			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
+		/*------------------------Metal-----------------------*/
+		for (int i = 0; i < 8; i++)
+		{
+			glBindVertexArray(VAO[2]);
+			if (i == 0 || i == 4)
+			{
+				model = glm::mat4(1.0f);
+				model = glm::translate(model, MetalPositions[i]);
+				angle = 0.0f;
+				model = glm::rotate(model, glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
+				model = glm::scale(model, glm::vec3(0.7, 0.15, 0.1));
+				modelLoc = glGetUniformLocation(shader.ID, "model");
+				glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+				glDrawArrays(GL_TRIANGLES, 0, 36);
+			}
+			else
+			{
+				model = glm::mat4(1.0f);
+				model = glm::translate(model, MetalPositions[i]);
+				angle = 90.0f;
+				model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
+				model = glm::scale(model, glm::vec3(0.1, 0.15, 0.1));
+				modelLoc = glGetUniformLocation(shader.ID, "model");
+				glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+				glDrawArrays(GL_TRIANGLES, 0, 36);
+			}
+			
+		}
+
+		/*------------------------Car-----------------------*/
+		for (int i = 0; i < 3; i++)
+		{
+			if (startPosition)
+			{
+				startPosition = false;
+
+				if (i == 0)
+				{
+					glBindVertexArray(VAO[3]);
+					model = glm::mat4(1.0f);
+					model = glm::translate(model, CarPosition[i]);
+					angle = 0.0f;
+					model = glm::rotate(model, glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
+					model = glm::scale(model, glm::vec3(0.2, 0.5, 1.0));
+					modelLoc = glGetUniformLocation(shader.ID, "model");
+					glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+					glDrawArrays(GL_TRIANGLES, 0, 36);
+				}
+				else if (i == 1)
+				{
+					glBindVertexArray(VAO[3]);
+					model = glm::mat4(1.0f);
+					model = glm::translate(model, CarPosition[i]);
+					angle = 0.0f;
+					model = glm::rotate(model, glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
+					model = glm::scale(model, glm::vec3(0.1, 0.5, 1.0));
+					modelLoc = glGetUniformLocation(shader.ID, "model");
+					glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+					glDrawArrays(GL_TRIANGLES, 0, 36);
+				}
+				else if (i == 2)
+				{
+					glBindVertexArray(VAO[3]);
+					model = glm::mat4(1.0f);
+					model = glm::translate(model, CarPosition[i]);
+					angle = 60.0f;
+					model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
+					model = glm::scale(model, glm::vec3(0.05, 0.5, 1.0));
+					modelLoc = glGetUniformLocation(shader.ID, "model");
+					glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+					glDrawArrays(GL_TRIANGLES, 0, 36);
+				}
+			}
+		}
+
+		for (int i = 0; i < 3; i++)
+		{
+			if (!startPosition)
+			{
+				if (i == 0)
+				{
+					glBindVertexArray(VAO[3]);
+					model = glm::mat4(1.0f);
+					newCarPosition[0] = newCarPosition[0] + glm::vec3(glfwGetTime(), 0.0f, 0.0f);
+					
+					//std::cout << glm::to_string(newCarPosition[0]) << std::endl;
+					std::cout << glfwGetTime() << std::endl;
+
+					model = glm::translate(model, CarPosition[i] + glm::vec3(glfwGetTime(), 0.0f, 0.0f));
+					angle = 0.0f;
+					model = glm::rotate(model, glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
+					model = glm::scale(model, glm::vec3(0.2, 0.5, 1.0));
+					modelLoc = glGetUniformLocation(shader.ID, "model");
+					glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+					glDrawArrays(GL_TRIANGLES, 0, 36);
+
+					std::string test = "vec3(40333.574219, 0.500000, 0.700000)";
+					if (glfwGetTime() > 5)
+					{
+						startPosition = true;
+						std::cout << "OBJECT REACHED DESTINATION" << std::endl;
+					}
+				}
+				else if (i == 1)
+				{
+					glBindVertexArray(VAO[3]);
+					model = glm::mat4(1.0f);
+					model = glm::translate(model, CarPosition[i] + glm::vec3(glfwGetTime(), 0.0f, 0.0f));
+					angle = 0.0f;
+					model = glm::rotate(model, glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
+					model = glm::scale(model, glm::vec3(0.1, 0.5, 1.0));
+					modelLoc = glGetUniformLocation(shader.ID, "model");
+					glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+					glDrawArrays(GL_TRIANGLES, 0, 36);
+				}
+				else if (i == 2)
+				{
+					glBindVertexArray(VAO[3]);
+					model = glm::mat4(1.0f);
+					model = glm::translate(model, CarPosition[i] + glm::vec3(glfwGetTime(), 0.0f, 0.0f));
+					angle = 60.0f;
+					model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
+					model = glm::scale(model, glm::vec3(0.05, 0.5, 1.0));
+					modelLoc = glGetUniformLocation(shader.ID, "model");
+					glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+					glDrawArrays(GL_TRIANGLES, 0, 36);
+				}
+			}
+		}
+
+		/*------------------------Cube-----------------------*/
+		for (int i = 0; i < 3; i++)
+		{
+			if (i == 0)
+			{
+				glBindVertexArray(VAO[4]);
+				model = glm::mat4(1.0f);
+				model = glm::translate(model, CubePosition[i]);
+				angle = 60.0f;
+				model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
+				model = glm::scale(model, glm::vec3(0.05, 0.5, 0.8));
+				modelLoc = glGetUniformLocation(shader.ID, "model");
+				glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+				glDrawArrays(GL_TRIANGLES, 0, 36);
+			}
+			else if (i == 1)
+			{
+				glBindVertexArray(VAO[4]);
+				model = glm::mat4(1.0f);
+				model = glm::translate(model, CubePosition[i]);
+				angle = 0.0f;
+				model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
+				model = glm::scale(model, glm::vec3(0.07, 0.5, 0.8));
+				modelLoc = glGetUniformLocation(shader.ID, "model");
+				glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+				glDrawArrays(GL_TRIANGLES, 0, 36);
+			}
+			else if (i == 2)
+			{
+				glBindVertexArray(VAO[4]);
+				model = glm::mat4(1.0f);
+				model = glm::translate(model, CubePosition[i]);
+				angle = 0.0f;
+				model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
+				model = glm::scale(model, glm::vec3(0.07, 0.5, 0.8));
+				modelLoc = glGetUniformLocation(shader.ID, "model");
+				glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+				glDrawArrays(GL_TRIANGLES, 0, 36);
+			}
+		}
+
+		/*------------------------StopCar-----------------------*/
+		for (int i = 0; i < 2; i++)
+		{
+			if (i == 0)
+			{
+				glBindVertexArray(VAO[5]);
+				model = glm::mat4(1.0f);
+				model = glm::translate(model, stopPositions[i]);
+				angle = 90.0f;
+				model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
+				model = glm::scale(model, glm::vec3(0.1, 0.15, 0.1));
+				modelLoc = glGetUniformLocation(shader.ID, "model");
+				glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+				glDrawArrays(GL_TRIANGLES, 0, 36);
+			}
+			else if (i == 1)
+			{
+				glBindVertexArray(VAO[5]);
+				model = glm::mat4(1.0f);
+				model = glm::translate(model, stopPositions[i]);
+				angle = 90.0f;
+				model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
+				model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+				model = glm::rotate(model, sin((float)glfwGetTime()), glm::vec3(0.0f, 0.0f, 1.0f));
+				model = glm::scale(model, glm::vec3(0.1, 0.15, 0.1));
+				modelLoc = glGetUniformLocation(shader.ID, "model");
+				glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+				glDrawArrays(GL_TRIANGLES, 0, 36);
+			}
+
+		}
+		
+
 		/*------------Activate The Shader-----------------*/
 		shader.use();
-		
-		
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		/*----------Swap Buffers------------*/
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
+	glDeleteVertexArrays(2, VAO);
+	glDeleteBuffers(2, VBO);
 	glDeleteBuffers(1, &EBO);
 
 	glfwTerminate();
