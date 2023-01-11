@@ -1,3 +1,7 @@
 # My-Humble-OpenGL-Work
-- Code is using openGL Core.
-You need to include (GLFW,GLAD,GLM,etc.) so you can run the code.
+- Modern OpenGL.
+## Libraries Used So Far ##
+- GLFW
+- GLAD
+- GLM
+- stb_image (Used for textures)
