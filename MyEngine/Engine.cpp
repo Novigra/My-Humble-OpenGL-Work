@@ -8,11 +8,16 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_opengl3.h"
+#include "imgui/imgui_impl_glfw.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
+const char* glsl_version = "#version 460";
 
 //Window Resolution
 const unsigned int WIDTH = 1200;
@@ -26,7 +31,8 @@ float deltaTime = 0.0f; //Time between 2 frames (current and last frames)
 float lastFrame = 0.0f; //Last frame time
 
 //Initialize Mouse Position
-bool firstMouse = true;
+bool rotate = true;
+bool firstMouse = false;
 float lastX = WIDTH / 2.0f;
 float lastY = HEIGHT / 2.0f;
 
@@ -58,7 +64,7 @@ int main()
 		return -1;
 	}
 	/*------------------Hide The Cursor And Centerlize it-------------------*/
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	/*glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);*/
 
 	/*------------------Enable Depth-------------------*/
 	glEnable(GL_DEPTH_TEST);
@@ -219,12 +225,36 @@ int main()
 	glUniform1i(glGetUniformLocation(shader.ID, "Texture1"), 0);
 	glUniform1i(glGetUniformLocation(shader.ID, "Texture2"), 1);*/
 
-	/*-----------------Colors---------------------*/
+	/*-----------------Set Up GUI---------------------*/
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+	ImGui::StyleColorsDark();
+
+	ImGuiStyle& style = ImGui::GetStyle();
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		style.WindowRounding = 0.0f;
+		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+	}
+
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init((char*)glGetString(GL_NUM_SHADING_LANGUAGE_VERSIONS));
+
+	bool show_demo_window = true;
+	bool show_another_window = false;
+	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	
 	/*-------------------------Rendering----------------------------*/
 	while (!glfwWindowShouldClose(window))
 	{
 		processInput(window);
+
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
 		
 		/*------------Color Buffer-----------------*/
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -281,7 +311,44 @@ int main()
 
 		glBindVertexArray(lightVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		
+
+		{
+			static float f = 0.0f;
+			static int counter = 0;
+
+			ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+			ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+			ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+			ImGui::Checkbox("Another Window", &show_another_window);
+
+			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+			ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+
+			if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+				counter++;
+			ImGui::SameLine();
+			ImGui::Text("counter = %d", counter);
+
+			ImGui::DragFloat3("Light Location :", &lightPos.x, 0.03f, -100.0f, 100.0f);
+
+			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			ImGui::End();
+
+			//ImGui::ShowDemoWindow();
+		}
+
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			GLFWwindow* backup_current_context = glfwGetCurrentContext();
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
+			glfwMakeContextCurrent(backup_current_context);
+		}
+
 		/*----------Swap Buffers------------*/
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -289,6 +356,10 @@ int main()
 
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
+
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 
 	glfwTerminate();
 	return 0;
@@ -316,6 +387,19 @@ void processInput(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
 		camera.ProcessKeyboard(DOWN, deltaTime);
 
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+	{
+		rotate = true;
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	}
+		
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
+	{
+		rotate = false;
+		firstMouse = true;
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	}
+
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 }
@@ -329,19 +413,24 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 /*------------------------Mouse Rotations-----------------------*/
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
-	if (firstMouse)
+	if (rotate)
 	{
+		if (firstMouse)
+		{
+			lastX = xpos;
+			lastY = ypos;
+			firstMouse = false;
+		}
+
+		float xoffset = xpos - lastX;
+		float yoffset = lastY - ypos;
+
 		lastX = xpos;
 		lastY = ypos;
-		firstMouse = false;
-	}
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos;
-	
-	lastX = xpos;
-	lastY = ypos;
 
-	camera.ProcessMouseMovement(xoffset, yoffset);
+		camera.ProcessMouseMovement(xoffset, yoffset);
+	}
+	
 }
 
 /*------------------------Mouse Zooming-----------------------*/
