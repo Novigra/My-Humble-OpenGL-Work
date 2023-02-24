@@ -16,27 +16,40 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+unsigned int LoadTexture(const char* path);
 
 const char* glsl_version = "#version 460";
 
-//Window Resolution
+/** Window Resolution */
 const unsigned int WIDTH = 1200;
 const unsigned int HEIGHT = 700;
 
-//Camera settings
+/** Camera settings */
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
-//Balance Speed
+/** Balance Speed */
 float deltaTime = 0.0f; //Time between 2 frames (current and last frames)
 float lastFrame = 0.0f; //Last frame time
 
-//Initialize Mouse Position
+/** Initialize Mouse Position */
 bool rotate = true;
 bool firstMouse = false;
 float lastX = WIDTH / 2.0f;
 float lastY = HEIGHT / 2.0f;
 
+/** GUI Properties */
+bool vsync = false;
+bool showHelp = false;
+
+/** Light Properties */
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+glm::vec3 lightAmb(0.2f, 0.2f, 0.2f);
+glm::vec3 lightDiff(0.5f, 0.5f, 0.5f);
+glm::vec3 lightSpec(1.0f, 1.0f, 1.0f);
+
+/** Obj Properties */
+glm::vec3 objectSpec(0.5f, 0.5f, 0.5f);
+float shininess = 32.0f;
 
 int main()
 {
@@ -63,63 +76,61 @@ int main()
 		std::cout << "Failed to intialize GLAD" << std::endl;
 		return -1;
 	}
-	/*------------------Hide The Cursor And Centerlize it-------------------*/
-	/*glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);*/
 
-	/*------------------Enable Depth-------------------*/
+	/** Enable Depth */
 	glEnable(GL_DEPTH_TEST);
 
-	/*------------------Build And Compile Shader------------------*/
+	/** Build And Compile Shader */
 	Shader lightShader("Shaders/4.6.VertexShader.vert", "Shaders/4.6.FragmentShader.frag");
 	Shader lightCubeShader("Shaders/LightVertexShader.vert", "Shaders/LightFragmentShader.frag");
 
-	/*------------------Draw Vertices-------------------*/
-	GLfloat Vertices[] =
-	{
-		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	/** Draw Vertices */
+	float Vertices[] = {
+		// positions          // normals           // texture coords
+		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
 
-		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
 
-		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
 
-		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
 
-		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
 
-		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
 	};
 
-	/*------------------Draw Multiple Objects-------------------*/
+	/** Draw Multiple Objects */
 	glm::vec3 cubePositions[] =
 	{
 		glm::vec3(0.0f,0.0f,0.0f),
@@ -145,87 +156,41 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
 
-	/*-----------------Cube Buffer---------------------*/
+	/** Cube Buffer */
 	glBindVertexArray(VAO);
 
 	// Position Attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
 	// Normal attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
-	/*-----------------Light Buffer---------------------*/
+	//Texture attribute
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+
+	/** Light Buffer */
 	glBindVertexArray(lightVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
 	//Position Attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	/*-----------------Texture---------------------*/
-	/*
+	/** Texture */
+	
 	//Generate the texture one
-	unsigned int texture1;
-	glGenTextures(1, &texture1);
-	glBindTexture(GL_TEXTURE_2D, texture1);
-	
-	//Set texture
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+	unsigned int DiffuseMap = LoadTexture("Textures/container2.png");
+	unsigned int SpecularMap = LoadTexture("Textures/container2_specular.png");
 
-	//Texture filtering(Setting MIPMAPS)
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	//Load the image
-	int width, height, nrChannels;
-	unsigned char* data = stbi_load("fire.png", &width, &height, &nrChannels, 0);
-	if (data)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failed to load the textures" << std::endl;
-	}
-	stbi_image_free(data);
-	
-	//Generate the texture two
-	unsigned int texture2;
-	glGenTextures(1, &texture2);
-	glBindTexture(GL_TEXTURE_2D, texture2);
-
-	//Set texture
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-
-	//Texture filtering(Setting MIPMAPS)
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	//Load the image	
-	data = stbi_load("Kermit.png", &width, &height, &nrChannels, 0);
-	if (data)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failed to load the textures" << std::endl;
-	}
-	stbi_image_free(data);
-	
 	//Activate the shader
-	shader.use();
+	lightShader.use();
+	lightShader.setInt("material.diffuse", 0);
+	lightShader.setInt("material.specular", 1);
 
-	glUniform1i(glGetUniformLocation(shader.ID, "Texture1"), 0);
-	glUniform1i(glGetUniformLocation(shader.ID, "Texture2"), 1);*/
-
-	/*-----------------Set Up GUI---------------------*/
+	/** Set Up GUI */
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -243,11 +208,7 @@ int main()
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init((char*)glGetString(GL_NUM_SHADING_LANGUAGE_VERSIONS));
 
-	bool show_demo_window = true;
-	bool show_another_window = false;
-	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-	
-	/*-------------------------Rendering----------------------------*/
+	/** Rendering */
 	while (!glfwWindowShouldClose(window))
 	{
 		processInput(window);
@@ -256,25 +217,34 @@ int main()
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 		
-		/*------------Color Buffer-----------------*/
+		/** Color Buffer */
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		/*----------Render Textures--------------*/
-		/*glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture1);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, texture2);*/
-
-		/*------------------------Render Objects-----------------------*/
+		/** Render Objects */
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		//Objects' Colors
+		// Activate the shader
 		lightShader.use();
-		lightShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-		lightShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
+
+		// Set object material
+		lightShader.setVec3("material.specular", objectSpec);
+		lightShader.setFloat("material.shininess", 32.0f);
+
+		// Set light material
+		lightShader.setVec3("light.ambient", lightAmb);
+		lightShader.setVec3("light.diffuse", lightDiff);
+		lightShader.setVec3("light.specular", lightSpec);
+
+		// Set Object Textures
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, DiffuseMap);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, SpecularMap);
+
 		lightShader.setVec3("lightPos", lightPos);
 		lightShader.setVec3("viewPos", camera.Position);
 
@@ -296,7 +266,7 @@ int main()
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
-		/*------------------------Render light-----------------------*/
+		/** Render light */
 		lightCubeShader.use();
 
 		lightCubeShader.setMat4("view", view);
@@ -312,30 +282,41 @@ int main()
 		glBindVertexArray(lightVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
+		/** User interface */
 		{
-			static float f = 0.0f;
-			static int counter = 0;
+			ImGui::Begin("MAT Testing");
 
-			ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+			ImGui::Text("Test how light affects the objects.");
+			ImGui::Checkbox("Enable Vsync", &vsync); // Limit the framerate
+			ImGui::Checkbox("Show Help Window", &showHelp);
 
-			ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-			ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-			ImGui::Checkbox("Another Window", &show_another_window);
+			/** Obj properties */
+			ImGui::SliderFloat("Material shininess", &shininess, 0.0f, 256.0f);
 
-			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-			ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-			if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-				counter++;
-			ImGui::SameLine();
-			ImGui::Text("counter = %d", counter);
-
-			ImGui::DragFloat3("Light Location :", &lightPos.x, 0.03f, -100.0f, 100.0f);
+			/** Light properties */
+			ImGui::Text("Light Properties:");
+			ImGui::DragFloat3("Light Location", &lightPos.x, 0.03f, -100.0f, 100.0f);
+			ImGui::ColorEdit3("Ambient", &lightAmb.x);
+			ImGui::ColorEdit3("Diffuse", &lightDiff.x);
+			ImGui::ColorEdit3("Specular", &lightSpec.x);
 
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-			ImGui::End();
 
-			//ImGui::ShowDemoWindow();
+			if (!vsync)
+			{
+				glfwSwapInterval(0);
+			}
+			else
+			{
+				glfwSwapInterval(1);
+			}
+
+			if (showHelp)
+			{
+				ImGui::ShowDemoWindow();
+			}
+
+			ImGui::End();
 		}
 
 		ImGui::Render();
@@ -349,7 +330,7 @@ int main()
 			glfwMakeContextCurrent(backup_current_context);
 		}
 
-		/*----------Swap Buffers------------*/
+		/** Swap Buffers */
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
@@ -365,7 +346,7 @@ int main()
 	return 0;
 }
 
-/*------------------------User Input-----------------------*/
+/** User Input */
 void processInput(GLFWwindow* window)
 {
 	const float cameraSpeed = 3.5f * deltaTime;
@@ -404,13 +385,13 @@ void processInput(GLFWwindow* window)
 		glfwSetWindowShouldClose(window, true);
 }
 
-/*------------------------Viewport Refresh Rate-----------------------*/
+/** Viewport Refresh Rate */
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 }
 
-/*------------------------Mouse Rotations-----------------------*/
+/** Mouse Rotations */
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (rotate)
@@ -433,8 +414,40 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	
 }
 
-/*------------------------Mouse Zooming-----------------------*/
+/** Mouse Zooming */
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	camera.ProcessMouseScroll(yoffset);
+}
+
+/** Loading Textures */
+unsigned int LoadTexture(const char* path)
+{
+	unsigned int texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	//Set texture
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	//Texture filtering(Setting MIPMAPS)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	//Load the image
+	int width, height, nrChannels;
+	unsigned char* data = stbi_load(path, &width, &height, &nrChannels, 0);
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "Failed to load the textures" << std::endl;
+	}
+	stbi_image_free(data);
+
+	return texture;
 }

@@ -53,7 +53,7 @@ public:
 		const char* vShaderCode = vertexCode.c_str();
 		const char* fShaderCode = fragmentCode.c_str();
 
-		/*---------------Compile Shaders---------------*/
+		/** Compile Shaders */
 		unsigned int vertex, fragment;
 		int success;
 		char infoLog[512];
@@ -100,13 +100,13 @@ public:
 		glDeleteShader(fragment);
 	}
 
-	/*-------Use The Shader-------*/
+	/** Use The Shader */
 	void use()
 	{
 		glUseProgram(ID);
 	}
 
-	/*-------Uniform Functions-------*/
+	/** Uniform Functions */
 	void setBool(const std::string& name, bool value) const
 	{
 		glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
