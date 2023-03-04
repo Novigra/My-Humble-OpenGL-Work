@@ -44,8 +44,10 @@ public:
 	glm::vec3 ModelPosition;
 
 	glm::vec3 pointLightPositions;
-
+	
+	/** Work In Progress */
 	static std::string OpenFile(const char* filter);
 	static std::string SaveFile(const char* filter);
+	
 	void WindowSettings();
 };
