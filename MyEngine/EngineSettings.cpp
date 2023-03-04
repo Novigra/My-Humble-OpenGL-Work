@@ -56,6 +56,7 @@ EngineSettings::EngineSettings()
 	pointLightPositions = glm::vec3(0.7f, 0.2f, 2.0f);
 }
 
+// Open files (Work In Progress)
 std::string EngineSettings::OpenFile(const char* filter)
 {
 	OPENFILENAMEA ofn;
@@ -78,6 +79,7 @@ std::string EngineSettings::OpenFile(const char* filter)
 	return std::string();
 }
 
+// Save files (Work In Progress)
 std::string EngineSettings::SaveFile(const char* filter)
 {
 	return std::string();
