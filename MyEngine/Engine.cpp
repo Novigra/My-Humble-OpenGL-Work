@@ -1,7 +1,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "Header/Camera.h"
-#include "Shaders/Shader.h"
+#include "Header/Shader.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "Header/stb_image.h"
 #include <glm/glm.hpp>
@@ -11,18 +11,27 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_opengl3.h"
 #include "imgui/imgui_impl_glfw.h"
+#include "Header/Model.h"
+#include "Header/EngineSettings.h"
+#include <string>
+
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 unsigned int LoadTexture(const char* path);
+void LightCalculations(Shader lightShader, glm::vec3 pointLightPositions);
+
 
 const char* glsl_version = "#version 460";
 
 /** Window Resolution */
 const unsigned int WIDTH = 1200;
 const unsigned int HEIGHT = 700;
+
+/** Engine Settings */
+EngineSettings myEng;
 
 /** Camera settings */
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -37,19 +46,7 @@ bool firstMouse = false;
 float lastX = WIDTH / 2.0f;
 float lastY = HEIGHT / 2.0f;
 
-/** GUI Properties */
-bool vsync = false;
-bool showHelp = false;
-
-/** Light Properties */
-glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
-glm::vec3 lightAmb(0.2f, 0.2f, 0.2f);
-glm::vec3 lightDiff(0.5f, 0.5f, 0.5f);
-glm::vec3 lightSpec(1.0f, 1.0f, 1.0f);
-
-/** Obj Properties */
 glm::vec3 objectSpec(0.5f, 0.5f, 0.5f);
-float shininess = 32.0f;
 
 int main()
 {
@@ -78,11 +75,14 @@ int main()
 	}
 
 	/** Enable Depth */
+	stbi_set_flip_vertically_on_load(true);
 	glEnable(GL_DEPTH_TEST);
 
 	/** Build And Compile Shader */
 	Shader lightShader("Shaders/4.6.VertexShader.vert", "Shaders/4.6.FragmentShader.frag");
 	Shader lightCubeShader("Shaders/LightVertexShader.vert", "Shaders/LightFragmentShader.frag");
+	Shader modelShader("Shaders/model.VertexShader.vert", "Shaders/model.FragmentShader.frag");
+	
 
 	/** Draw Vertices */
 	float Vertices[] = {
@@ -190,6 +190,9 @@ int main()
 	lightShader.setInt("material.diffuse", 0);
 	lightShader.setInt("material.specular", 1);
 
+	// Loading Model
+	Model myModel("Models/knight-helmet/new/untitled.obj");
+
 	/** Set Up GUI */
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -229,14 +232,13 @@ int main()
 		// Activate the shader
 		lightShader.use();
 
+		lightShader.setVec3("viewPos", camera.Position);
+		LightCalculations(lightShader, myEng.pointLightPositions);
+
 		// Set object material
 		lightShader.setVec3("material.specular", objectSpec);
 		lightShader.setFloat("material.shininess", 32.0f);
 
-		// Set light material
-		lightShader.setVec3("light.ambient", lightAmb);
-		lightShader.setVec3("light.diffuse", lightDiff);
-		lightShader.setVec3("light.specular", lightSpec);
 
 		// Set Object Textures
 		glActiveTexture(GL_TEXTURE0);
@@ -244,9 +246,6 @@ int main()
 
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, SpecularMap);
-
-		lightShader.setVec3("lightPos", lightPos);
-		lightShader.setVec3("viewPos", camera.Position);
 
 		glm::mat4 view = camera.GetViewMatrix();
 		lightShader.setMat4("view", view);
@@ -256,7 +255,7 @@ int main()
 		lightShader.setMat4("projection", projection);
 
 		glBindVertexArray(VAO);
-		for (int i = 0; i < 1; i++)
+		for (int i = 1; i < 10; i++)
 		{
 			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::translate(model, cubePositions[i]);
@@ -274,7 +273,7 @@ int main()
 		lightCubeShader.setMat4("projection", projection);
 
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, lightPos);
+		model = glm::translate(model, myEng.pointLightPositions);
 		model = glm::scale(model, glm::vec3(0.5f));
 
 		lightCubeShader.setMat4("model", model);
@@ -282,42 +281,26 @@ int main()
 		glBindVertexArray(lightVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		/** User interface */
-		{
-			ImGui::Begin("MAT Testing");
+		/** Render 3D_Model */
+		modelShader.use();
+		
+		modelShader.setVec3("viewPos", camera.Position);
+		LightCalculations(modelShader, myEng.pointLightPositions);
+		modelShader.setFloat("material.shininess", 32.0f);
 
-			ImGui::Text("Test how light affects the objects.");
-			ImGui::Checkbox("Enable Vsync", &vsync); // Limit the framerate
-			ImGui::Checkbox("Show Help Window", &showHelp);
+		modelShader.setMat4("view", view);
+		modelShader.setMat4("projection", projection);
 
-			/** Obj properties */
-			ImGui::SliderFloat("Material shininess", &shininess, 0.0f, 256.0f);
+		model = glm::mat4(1.0f);
 
-			/** Light properties */
-			ImGui::Text("Light Properties:");
-			ImGui::DragFloat3("Light Location", &lightPos.x, 0.03f, -100.0f, 100.0f);
-			ImGui::ColorEdit3("Ambient", &lightAmb.x);
-			ImGui::ColorEdit3("Diffuse", &lightDiff.x);
-			ImGui::ColorEdit3("Specular", &lightSpec.x);
+		model = glm::translate(model, myEng.ModelPosition);
+		model = glm::scale(model, glm::vec3(0.03f));
+		//model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
-			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
-			if (!vsync)
-			{
-				glfwSwapInterval(0);
-			}
-			else
-			{
-				glfwSwapInterval(1);
-			}
-
-			if (showHelp)
-			{
-				ImGui::ShowDemoWindow();
-			}
-
-			ImGui::End();
-		}
+		modelShader.setMat4("model", model);
+		myModel.Draw(modelShader);
+		
+		myEng.WindowSettings();
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -450,4 +433,34 @@ unsigned int LoadTexture(const char* path)
 	stbi_image_free(data);
 
 	return texture;
+}
+
+void LightCalculations(Shader lightShader, glm::vec3 pointLightPositions)
+{
+	// Directional light
+	lightShader.setVec3("dirLight.direction", myEng.lightDir);
+	lightShader.setVec3("dirLight.ambient", myEng.lightDirAmb);
+	lightShader.setVec3("dirLight.diffuse", myEng.lightDirDiff);
+	lightShader.setVec3("dirLight.specular", myEng.lightDirSpec);
+
+	// Point Lights
+	lightShader.setVec3("pointLights.position", pointLightPositions);
+	lightShader.setVec3("pointLights.ambient", myEng.lightPoAmb);
+	lightShader.setVec3("pointLights.diffuse", myEng.lightPoDiff);
+	lightShader.setVec3("pointLights.specular", myEng.lightPoSpec);
+	lightShader.setFloat("pointLights.constant", myEng.lightConst);
+	lightShader.setFloat("pointLights.linear", myEng.lightLin);
+	lightShader.setFloat("pointLights.quadratic", myEng.lightQuad);
+
+	// spotLight
+	lightShader.setVec3("spotLight.position", camera.Position);
+	lightShader.setVec3("spotLight.direction", camera.Front);
+	lightShader.setVec3("spotLight.ambient", myEng.lightSpAmb);
+	lightShader.setVec3("spotLight.diffuse", myEng.lightSpDiff);
+	lightShader.setVec3("spotLight.specular", myEng.lightSpSpec);
+	lightShader.setFloat("spotLight.constant", 1.0f);
+	lightShader.setFloat("spotLight.linear", 0.09f);
+	lightShader.setFloat("spotLight.quadratic", 0.032f);
+	lightShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(myEng.cutOff)));
+	lightShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(myEng.outerCutOff)));
 }
