@@ -1,4 +1,4 @@
-/** Engine Settings will handel anything related to the user interface */
+/** Engine Settings will handle anything related to the user interface */
 
 #include "Header/EngineSettings.h"
 #include <Windows.h>
