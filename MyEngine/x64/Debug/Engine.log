@@ -1,0 +1,15 @@
+﻿  Engine.cpp
+C:\OpenGL\OpenGLProjects\My-Humble-OpenGL-Work\MyEngine\Engine.cpp(228,22): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\OpenGL\OpenGLProjects\My-Humble-OpenGL-Work\MyEngine\Engine.cpp(384,12): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\OpenGL\OpenGLProjects\My-Humble-OpenGL-Work\MyEngine\Engine.cpp(385,12): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\OpenGL\OpenGLProjects\My-Humble-OpenGL-Work\MyEngine\Engine.cpp(389,17): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\OpenGL\OpenGLProjects\My-Humble-OpenGL-Work\MyEngine\Engine.cpp(390,17): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\OpenGL\OpenGLProjects\My-Humble-OpenGL-Work\MyEngine\Engine.cpp(392,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\OpenGL\OpenGLProjects\My-Humble-OpenGL-Work\MyEngine\Engine.cpp(393,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\OpenGL\OpenGLProjects\My-Humble-OpenGL-Work\MyEngine\Engine.cpp(403,28): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+  Mesh.cpp
+C:\OpenGL\OpenGLProjects\My-Humble-OpenGL-Work\MyEngine\Mesh.cpp(41,43): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
+  Model.cpp
+  Shader.cpp
+  Generating Code...
+  Engine.vcxproj -> C:\OpenGL\OpenGLProjects\My-Humble-OpenGL-Work\MyEngine\x64\Debug\Engine.exe

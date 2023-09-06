@@ -191,7 +191,7 @@ int main()
 	lightShader.setInt("material.specular", 1);
 
 	// Loading Model
-	Model myModel("Models/knight-helmet/new/untitled.obj");
+	Model myModel("knight-helmet/untitled.obj");
 
 	/** Set Up GUI */
 	IMGUI_CHECKVERSION();
@@ -334,22 +334,22 @@ void processInput(GLFWwindow* window)
 {
 	const float cameraSpeed = 3.5f * deltaTime;
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		camera.ProcessKeyboard(FORWARD, deltaTime);
+		camera.ProcessKeyboard(Camera_Movement::FORWARD, deltaTime);
 
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		camera.ProcessKeyboard(BACKWARD, deltaTime);
+		camera.ProcessKeyboard(Camera_Movement::BACKWARD, deltaTime);
 
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		camera.ProcessKeyboard(LEFT, deltaTime);
+		camera.ProcessKeyboard(Camera_Movement::LEFT, deltaTime);
 
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		camera.ProcessKeyboard(RIGHT, deltaTime);
+		camera.ProcessKeyboard(Camera_Movement::RIGHT, deltaTime);
 
 	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-		camera.ProcessKeyboard(UP, deltaTime);
+		camera.ProcessKeyboard(Camera_Movement::UP, deltaTime);
 
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-		camera.ProcessKeyboard(DOWN, deltaTime);
+		camera.ProcessKeyboard(Camera_Movement::DOWN, deltaTime);
 
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
 	{
