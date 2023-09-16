@@ -1,5 +1,7 @@
 # My-Humble-OpenGL-Work
-- Modern OpenGL.
+- OpenGL Core-Profile.
+  
+Note: The project is not a full program, and it is just me learning OpenGL, so if it's unorganized or the naming conventions are all over the place, that's why. :flushed:
 ## Libraries Used So Far ##
 - GLFW
 - GLAD
